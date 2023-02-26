@@ -1,0 +1,7 @@
+* Installation
+
+Add ~figedit.el~ to a directory in your ~load-path~, and put ~(require 'figedit)~ in your init file.
+
+* License
+
+This package is licensed under the GPL v3. See the ~COPYING~ file for the full license text.
