@@ -5,7 +5,7 @@
 ;; Author: Oliver Nikolas Winspear <dev@oliverwinspear.com>
 ;; Created: 13 Feb 2023
 ;; Keywords: tools
-;; URL: https://github.com/olnw/stow/blob/main/Emacs/.emacs.d/lisp/figedit.el
+;; URL: https://github.com/olnw/figedit
 
 ;; This file is not part of GNU Emacs.
 
