@@ -1,6 +1,16 @@
-* Installation
+* What's This?
 
-Add ~figedit.el~ to a directory in your ~load-path~, and put ~(require 'figedit)~ in your init file.
+This is an Emacs Lisp package that implements the same functionality as Gilles Castel's [[https://github.com/gillescastel/inkscape-figures][Inkscape figure manager]]. It is designed to be more convenient for Emacs users, making use of the [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Minibuffer.html][minibuffer]] for selecting figures, rather than an external menu such as [[https://github.com/davatorium/rofi][rofi]], [[https://github.com/chipsenkbeil/choose][choose]], or [[https://tools.suckless.org/dmenu/][dmenu]].
+
+* Usage
+
+Add ~figedit.el~ to a directory in your ~load-path~, and put ~(require 'figedit)~ in your init file. Or, with ~use-package~:
+
+#+begin_src emacs-lisp
+  (use-package figedit :load-path "/path/to/figedit.el")
+#+end_src
+
+Figedit can be customized by running ~M-x customize-group RET figedit RET~.
 
 * License
 
