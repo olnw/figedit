@@ -36,7 +36,7 @@ Figedit provides two interactive functions: these are ~figedit-insert~ and ~fige
 
 The behaviour of ~figedit-insert~ is to insert the LaTeX code needed to render a figure into the current buffer. When called, the user is prompted to select a figure file. If the figure already exists on the user's filesystem, this is all that is done. If the figure does not exist, it is created from a template file. The newly created figure is then opened with ~figedit-edit-program~, which defaults to [[https://inkscape.org][Inkscape]], a free vector graphics editor.
 
-The function ~figedit-edit~ is used for editing existing figures. When called, the user is prompted to select a figure file. This file will then be opoened with ~figedit-edit-program~.
+The function ~figedit-edit~ is used for editing existing figures. When called, the user is prompted to select a figure file. This figure is then opened with ~figedit-edit-program~.
 
 * License
 
