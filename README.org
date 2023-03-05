@@ -4,10 +4,26 @@ This is an Emacs Lisp package that implements the same functionality as Gilles C
 
 * Usage
 
-Add ~figedit.el~ to a directory in your ~load-path~, and put ~(require 'figedit)~ in your init file. Or, with ~use-package~:
+Download ~figedit.el~ to a place on your filesystem, then add the following to your init file:
 
 #+begin_src emacs-lisp
-  (use-package figedit :load-path "/path/to/figedit.el")
+(add-to-list 'load-path "/path/to/figedit.el")
+(require 'figedit)
+#+end_src
+
+Or with ~use-package~:
+
+#+begin_src emacs-lisp
+(use-package figedit :load-path "/path/to/figedit.el")
+#+end_src
+
+Alternatively, users of ~straight.el~ can tell straight to pull the Figedit repository from GitHub:
+
+#+begin_src emacs-lisp
+(use-package figedit
+  :straight (figedit :type git
+                     :host github
+                     :repo "olnw/figedit"))
 #+end_src
 
 Figedit can be customized by running ~M-x customize-group RET figedit RET~.
