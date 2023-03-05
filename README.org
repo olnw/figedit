@@ -2,7 +2,7 @@
 
 This is an Emacs Lisp package that implements the same functionality as Gilles Castel's [[https://github.com/gillescastel/inkscape-figures][Inkscape figure manager]]. It is designed to be more convenient for Emacs users, making use of the [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Minibuffer.html][minibuffer]] for selecting figures, rather than an external menu such as [[https://github.com/davatorium/rofi][rofi]], [[https://github.com/chipsenkbeil/choose][choose]], or [[https://tools.suckless.org/dmenu/][dmenu]].
 
-* Usage
+* Installation
 
 Download ~figedit.el~ to a place on your filesystem, then add the following to your init file:
 
@@ -26,7 +26,17 @@ Alternatively, users of ~straight.el~ can tell straight to pull the Figedit repo
                      :repo "olnw/figedit"))
 #+end_src
 
-Figedit can be customized by running ~M-x customize-group RET figedit RET~.
+* Customisation
+
+Figedit can be customised by running ~M-x customize-group RET figedit RET~.
+
+* Usage
+
+Figedit provides two interactive functions: these are ~figedit-insert~ and ~figedit-edit~.
+
+The behaviour of ~figedit-insert~ is to insert the LaTeX code needed to render a figure into the current buffer. When it is called, the user will be prompted to select a figure file. If the figure already exists on the user's filesystem, this is all that is done. If the figure does not exist, it is created from a template file. The newly created figure is then opened with ~figedit-edit-program~, which defaults to [[in][Inkscape]], a free vector graphics editor.
+
+The function ~figedit-edit~ is used for editing existing figures. When it is called, the user will be prompted to select a figure file. This file will then be opoened with ~figedit-edit-program~.
 
 * License
 
