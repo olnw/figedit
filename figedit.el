@@ -52,13 +52,50 @@ Must be relative to the main TeX source file."
   :type 'string
   :group 'figedit)
 
+(defcustom figedit-file-change-actions '(export-figure build-document)
+  "List of actions performed after a figure file is changed while being watched.
+Each element of this list must be one of the following symbols:
+- `build-document'
+- `export-figure'
+- `lsp-latex-build'
+- `save-buffer'"
+  :type 'sexp
+  :group 'figedit)
+
+(defcustom figedit-edit-program-open-actions '(save-buffer)
+  "List of actions to be performed after `figedit-edit-program' is started.
+Each element of this list must be one of the following symbols:
+- `build-document'
+- `export-figure'
+- `lsp-latex-build'
+- `save-buffer'"
+  :type 'sexp
+  :group 'figedit)
+
+(defcustom figedit-edit-program-close-actions '()
+  "List of actions to be performed after `figedit-edit-program' is closed.
+Each element of this list must be one of the following symbols:
+- `build-document'
+- `export-figure'
+- `lsp-latex-build'
+- `save-buffer'"
+  :type 'sexp
+  :group 'figedit)
+
 (defcustom figedit-edit-program "inkscape"
   "Name of the executable to be used for the creation and editing of figures."
   :type 'string
   :group 'figedit)
 
-(defcustom figedit-file-change-actions '(export-figure compile-document)
-  "List of actions to be performed when a figure file is changed while being watched."
+(defcustom figedit-build-program "latexmk"
+  "Name of the executable to be used for building LaTeX documents."
+  :type 'string
+  :group 'figedit)
+
+(defcustom figedit-build-args '("-pdf")
+  "List of arguments passed to `figedit-build-program' when building a document."
+  :type 'sexp
+  :group 'figedit)
 
 (defcustom figedit-export-program "inkscape"
   "Name of the executable to be used for exporting figures."
@@ -88,6 +125,32 @@ If nil, allow all extensions."
   :type 'sexp
   :group 'figedit)
 
+(defun figedit--maybe-build-document (action-list)
+  ""
+  (when (member 'build-document action-list)
+    (apply #'start-process
+           figedit-build-program
+           figedit-build-program
+           figedit-build-program
+           figedit-build-args))
+
+  (when (and (member 'lsp-latex-build action-list)
+             (eq major-mode #'latex-mode))
+    (lsp-latex-build)))
+
+(defun figedit--perform-actions (action-list figure-path)
+  ""
+  (if (member 'export-figure action-list)
+      ;; Here, a sentinel is used to only perform
+      ;; the build once the export process has completed.
+      (figedit-export figure-path
+                      (lambda (process event)
+                        (unless (process-live-p process)
+                          (figedit--maybe-build-document action-list))))
+    (figedit--maybe-build-document action-list))
+
+  (when (member 'save-buffer action-list)
+    (save-buffer)))
 
 (defun figedit-maybe-make-directory (directory)
   "Check if DIRECTORY exists.  If it does, return t.
@@ -166,17 +229,6 @@ Put the following in your LaTeX preamble to use this template:
             figure-name-base
             figure-name-base)))
 
-(defun figedit-maybe-compile-document ()
-  "Maybe compile the current LaTeX document using lsp-latex."
-  (when (and (member 'compile-document figedit-file-change-actions)
-             (eq major-mode #'latex-mode)
-             (featurep 'lsp-latex))
-    (if (buffer-modified-p)
-        (if lsp-latex-build-on-save
-            (save-buffer)
-          (progn (save-buffer) (lsp-latex-build)))
-      (lsp-latex-build))))
-
 (defun figedit-open-and-watch (figure-path)
   "Open FIGURE-PATH with `figedit-edit-program', and watch the file for changes.
 Whenever a change is made, perform all actions specified by `figedit-file-change-actions'."
@@ -185,15 +237,7 @@ Whenever a change is made, perform all actions specified by `figedit-file-change
                        figure-path
                        '(change)
                        (lambda (event)
-                         (if (member 'export-figure figedit-file-change-actions)
-
-                             ;; Here, a sentinel is used to only perform
-                             ;; the build once the export process has completed.
-                             (figedit-export figure-path
-                                             (lambda (process event)
-                                               (unless (process-live-p process)
-                                                 (figedit-maybe-compile-document))))
-                           (figedit-maybe-compile-document))))))
+                         (figedit--perform-actions figedit-file-change-actions figure-path)))))
 
       ;; Open the figure with the program specified by `figedit-edit-program'.
       ;; If this program is no longer running, stop watching the figure file.
@@ -204,7 +248,10 @@ Whenever a change is made, perform all actions specified by `figedit-file-change
                       figure-path)
        (lambda (process event)
          (unless (process-live-p process)
-           (file-notify-rm-watch descriptor)))))))
+           (figedit--perform-actions figedit-edit-program-close-actions figure-path)
+           (file-notify-rm-watch descriptor))))
+
+      (figedit--perform-actions figedit-edit-program-open-actions figure-path))))
 
 (defun figedit-read-path ()
   "Let the user select a figure file, and return its absolute path.
