@@ -42,12 +42,13 @@
   :prefix "figedit-")
 
 (defcustom figedit-template-path "~/Documents/Inkscape Figure Template.svg"
-  "Absolute path of the file to be used as a template for any figure that the user creates."
+  "Absolute path of the figure template file."
   :type '(file :must-match t) ; Must be the name of an existing file
   :group 'figedit)
 
 (defcustom figedit-root-directory "Figures/"
-  "Path to the directory in which figures are stored, relative to the main TeX source file."
+  "Path to the directory in which figures are stored.
+Must be relative to the main TeX source file."
   :type 'string
   :group 'figedit)
 
