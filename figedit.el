@@ -120,7 +120,7 @@ function can be specified if `figedit-insert' is given a prefix argument."
   :group 'figedit)
 
 (defcustom figedit-allowed-extensions '("svg" "pdf" "ps" "eps" "png" "jpg" "jpeg")
-  "Whitelist for file extensions showed by `figedit-read-path'.
+  "Whitelist for file extensions shown by `figedit--read-path'.
 If nil, allow all extensions."
   :type 'sexp
   :group 'figedit)
@@ -253,14 +253,20 @@ Whenever a change is made, perform all actions specified by `figedit-file-change
 
       (figedit--perform-actions figedit-edit-program-open-actions figure-path))))
 
-(defun figedit-read-path ()
+(defun figedit--read-path (&optional must-match)
   "Let the user select a figure file, and return its absolute path.
+
+If supplied and non-nil, MUST-MATCH requires the user to enter the
+name of an existing file.
+
 Only files with extensions specified by `figedit-allowed-extensions'
 will be shown.  If this variable is nil, show all files."
   (expand-file-name
    (read-file-name "Select a figure file: "
                    (expand-file-name figedit-root-directory)
-                   nil nil nil
+                   nil
+                   must-match
+                   nil
                    (lambda (file-name)
                      (or (null figedit-allowed-extensions)
                          (file-directory-p file-name)
@@ -268,53 +274,60 @@ will be shown.  If this variable is nil, show all files."
                                  figedit-allowed-extensions))))))
 
 ;;;###autoload
-(defun figedit-insert ()
-  "Let the user select a figure file in `figedit-root-directory' for insertion.
-The LaTeX code needed to render this figure will then be inserted into the
-current buffer.
+(defun figedit-insert (figure-path &optional template-function)
+  "Insert LaTeX code for FIGURE-PATH figure into current buffer.
+FIGURE-PATH is the path to the figure file.  This might be a PDF or
+SVG file, for example, but the file type depends on the template
+function that is used.  If supplied, TEMPLATE-FUNCTION overrides the
+default template function, which is the first element of
+`figedit-template-functions'.
 
-If the file does not already exist, it will be created from the template file
-specified by `figedit-template-path'.  Then, it will be opened in the program
-specified by `figedit-edit-program'.  After any change to the file, the actions
-specified by `figedit-file-change-actions' will be performed."
-  (interactive)
+If the figure does not already exist, it will be created from the
+template file specified by `figedit-template-path'.  Then, it will be
+opened in a vector graphics editor, given by `figedit-edit-program'.
+
+After opening this program, actions in
+`figedit-edit-program-open-actions' will be performed.  When it is
+closed, actions in `figedit-edit-program-close-actions' will be
+performed.  While the figure is being edited, certain actions can be
+performed upon every change to the file.  These are specified by
+`figedit-file-change-actions'."
+  (interactive (list (figedit--read-path)
+                     (when current-prefix-arg
+                       (intern (completing-read "Select a LaTeX template function: "
+                                                figedit-template-functions)))))
 
   (when (figedit-maybe-make-directory figedit-root-directory)
-    (let* ((figure-path (figedit-read-path))
-           (figure-parent-directory (file-name-parent-directory figure-path))
-           (template-function (when current-prefix-arg
-                                (intern (completing-read "Select a LaTeX template function: "
-                                                         figedit-template-functions)))))
+    ;; Make the figure's parent directory if it doesn't already exist.
+    (make-directory (file-name-parent-directory figure-path) t)
 
-      ;; Make the figure's parent directory if it doesn't exist.
-      (unless (file-directory-p figure-parent-directory)
-        (make-directory figure-parent-directory t))
+    ;; Insert the LaTeX code needed to render the figure.
+    (insert (funcall (if template-function
+                         template-function
+                       (car figedit-template-functions))
+                     figure-path))
 
-      ;; Insert the LaTeX code needed to render the figure.
-      (insert (funcall (if template-function
-                           template-function
-                         (car figedit-template-functions))
-                       figure-path))
-
-      ;; If the specified figure does not exist, create it from the specified
-      ;; template file, open it in the specified figure editor, and watch the
-      ;; file for changes.
-      (unless (file-exists-p figure-path)
-        (copy-file figedit-template-path figure-path)
-        (figedit-open-and-watch figure-path)))))
+    ;; If the specified figure does not exist, create it from the specified
+    ;; template file, open it in the specified figure editor, and watch the
+    ;; file for changes.
+    (unless (file-exists-p figure-path)
+      (copy-file figedit-template-path figure-path)
+      (figedit-open-and-watch figure-path))))
 
 ;;;###autoload
-(defun figedit-edit ()
-  "Let the user select a figure file in `figedit-root-directory' for editing.
-The chosen file will be opened in the program specified by
-`figedit-edit-program'.  After any change to the file, the actions
-specified by `figedit-file-change-actions' will be performed."
-  (interactive)
+(defun figedit-edit (figure-path)
+  "Open FIGURE-PATH with the program specified by `figedit-edit-program'.
 
-  ;; If the root figure directory does not exist, ask the user if it
-  ;; should be created and act accordingly.
-  (when (figedit-maybe-make-directory figedit-root-directory)
-    (figedit-open-and-watch (figedit-read-path))))
+After opening this program, actions in
+`figedit-edit-program-open-actions' will be performed.  When it is
+closed, actions in `figedit-edit-program-close-actions' will be
+performed.  While the figure is being edited, certain actions can be
+performed upon every change to the file.  These are specified by
+`figedit-file-change-actions'."
+  (interactive (list (progn (figedit-maybe-make-directory figedit-root-directory)
+                            (figedit--read-path t))))
+
+  (figedit-open-and-watch figure-path))
 
 (provide 'figedit)
 
