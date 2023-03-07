@@ -38,7 +38,8 @@
 (defgroup figedit
   nil
   "Functions for inserting and editing figures in LaTeX documents."
-  :group 'tools)
+  :group 'tools
+  :prefix "figedit-")
 
 (defcustom figedit-template-path "~/Documents/Inkscape Figure Template.svg"
   "Absolute path of the file to be used as a template for any figure that the user creates."
