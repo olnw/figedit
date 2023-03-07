@@ -59,6 +59,18 @@ Must be relative to the main TeX source file."
 
 (defcustom figedit-file-change-actions '(export-figure compile-document)
   "List of actions to be performed when a figure file is changed while being watched."
+
+(defcustom figedit-export-program "inkscape"
+  "Name of the executable to be used for exporting figures."
+  :type 'string
+  :group 'figedit)
+
+(defcustom figedit-export-args '("--export-area-page"
+                                 "--export-dpi"
+                                 "300"
+                                 "--export-type=pdf"
+                                 "--export-latex")
+  "List of arguments passed to `figedit-export-program' when exporting a figure."
   :type 'sexp
   :group 'figedit)
 
@@ -76,14 +88,6 @@ If nil, allow all extensions."
   :type 'sexp
   :group 'figedit)
 
-(defcustom figedit-export-args '("--export-area-page"
-                                 "--export-dpi"
-                                 "300"
-                                 "--export-type=pdf"
-                                 "--export-latex")
-  "List of arguments passed to Inkscape when exporting a figure."
-  :type 'sexp
-  :group 'figedit)
 
 (defun figedit-maybe-make-directory (directory)
   "Check if DIRECTORY exists.  If it does, return t.
@@ -98,15 +102,17 @@ The return value of this function reflects whether DIRECTORY exists."
            (not (make-directory directory t)))))
 
 (defun figedit-export (figure-path &optional sentinel)
-  "Export the figure file specified by FIGURE-PATH using Inkscape.
-This creates two new files: a .pdf file and a .pdf_tex file.
-The .pdf file contains the figure without the text, and the .pdf_tex
-file contains the LaTeX code needed to place the text at the right
-locations on the figure."
+  "Export the figure file specified by FIGURE-PATH.
+This uses Inkscape by default, and creates two new files: a .pdf file
+and a .pdf_tex file.  The .pdf file contains the figure without the
+text, and the .pdf_tex file contains the LaTeX code needed to place
+the text at the right locations on the figure.
+
+If supplied, SENTINEL is used as the sentinel for the export process."
   (set-process-sentinel (apply #'start-process
-                               "inkscape-export"
-                               nil
-                               "inkscape"
+                               "figedit-export"
+                               "figedit-export"
+                               figedit-export-program
                                figure-path
                                figedit-export-args)
                         sentinel))
