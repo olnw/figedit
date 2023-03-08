@@ -301,27 +301,25 @@ closed, actions in `figedit-edit-program-close-actions' will be
 performed.  While the figure is being edited, certain actions can be
 performed upon every change to the file.  These are specified by
 `figedit-file-change-actions'."
-  (interactive (list (figedit--read-path)
-                     (when current-prefix-arg
-                       (intern (completing-read "Select a LaTeX template function: "
-                                                figedit-template-functions)))))
+  (interactive (progn (figedit-maybe-make-directory figedit-root-directory)
+                      (list (figedit--read-path)
+                            (when current-prefix-arg
+                              (intern (completing-read "Select a LaTeX template function: "
+                                                       figedit-template-functions))))))
 
-  (when (figedit-maybe-make-directory figedit-root-directory)
-    ;; Make the figure's parent directory if it doesn't already exist.
+  ;; Insert the LaTeX code needed to render the figure.
+  (insert (funcall (if template-function
+                       template-function
+                     (car figedit-template-functions))
+                   figure-path))
+
+  ;; If the specified figure does not exist, create it from the specified
+  ;; template file, open it in the specified figure editor, and watch the
+  ;; file for changes.
+  (unless (file-exists-p figure-path)
     (make-directory (file-name-parent-directory figure-path) t)
-
-    ;; Insert the LaTeX code needed to render the figure.
-    (insert (funcall (if template-function
-                         template-function
-                       (car figedit-template-functions))
-                     figure-path))
-
-    ;; If the specified figure does not exist, create it from the specified
-    ;; template file, open it in the specified figure editor, and watch the
-    ;; file for changes.
-    (unless (file-exists-p figure-path)
-      (copy-file figedit-template-path figure-path)
-      (figedit-edit figure-path))))
+    (copy-file figedit-template-path figure-path)
+    (figedit-edit figure-path)))
 
 (provide 'figedit)
 
