@@ -229,9 +229,38 @@ Put the following in your LaTeX preamble to use this template:
             figure-name-base
             figure-name-base)))
 
-(defun figedit-open-and-watch (figure-path)
-  "Open FIGURE-PATH with `figedit-edit-program', and watch the file for changes.
-Whenever a change is made, perform all actions specified by `figedit-file-change-actions'."
+(defun figedit--read-path (&optional must-match)
+  "Let the user select a figure file, and return its absolute path.
+
+If supplied and non-nil, MUST-MATCH requires the user to enter the
+name of an existing file.
+
+Only files with extensions specified by `figedit-allowed-extensions'
+will be shown.  If this variable is nil, show all files."
+  (expand-file-name
+   (read-file-name "Select a figure file: "
+                   (expand-file-name figedit-root-directory)
+                   nil
+                   must-match
+                   nil
+                   (lambda (file-name)
+                     (or (null figedit-allowed-extensions)
+                         (file-directory-p file-name)
+                         (member (file-name-extension file-name)
+                                 figedit-allowed-extensions))))))
+
+;;;###autoload
+(defun figedit-edit (figure-path)
+  "Open FIGURE-PATH with the program specified by `figedit-edit-program'.
+After opening this program, actions in
+`figedit-edit-program-open-actions' will be performed.  When it is
+closed, actions in `figedit-edit-program-close-actions' will be
+performed.  While the figure is being edited, certain actions can be
+performed upon every change to the file.  These are specified by
+`figedit-file-change-actions'."
+  (interactive (list (progn (figedit-maybe-make-directory figedit-root-directory)
+                            (figedit--read-path t))))
+
   (when (file-regular-p figure-path)
     (let ((descriptor (file-notify-add-watch
                        figure-path
@@ -252,26 +281,6 @@ Whenever a change is made, perform all actions specified by `figedit-file-change
            (file-notify-rm-watch descriptor))))
 
       (figedit--perform-actions figedit-edit-program-open-actions figure-path))))
-
-(defun figedit--read-path (&optional must-match)
-  "Let the user select a figure file, and return its absolute path.
-
-If supplied and non-nil, MUST-MATCH requires the user to enter the
-name of an existing file.
-
-Only files with extensions specified by `figedit-allowed-extensions'
-will be shown.  If this variable is nil, show all files."
-  (expand-file-name
-   (read-file-name "Select a figure file: "
-                   (expand-file-name figedit-root-directory)
-                   nil
-                   must-match
-                   nil
-                   (lambda (file-name)
-                     (or (null figedit-allowed-extensions)
-                         (file-directory-p file-name)
-                         (member (file-name-extension file-name)
-                                 figedit-allowed-extensions))))))
 
 ;;;###autoload
 (defun figedit-insert (figure-path &optional template-function)
@@ -312,22 +321,7 @@ performed upon every change to the file.  These are specified by
     ;; file for changes.
     (unless (file-exists-p figure-path)
       (copy-file figedit-template-path figure-path)
-      (figedit-open-and-watch figure-path))))
-
-;;;###autoload
-(defun figedit-edit (figure-path)
-  "Open FIGURE-PATH with the program specified by `figedit-edit-program'.
-
-After opening this program, actions in
-`figedit-edit-program-open-actions' will be performed.  When it is
-closed, actions in `figedit-edit-program-close-actions' will be
-performed.  While the figure is being edited, certain actions can be
-performed upon every change to the file.  These are specified by
-`figedit-file-change-actions'."
-  (interactive (list (progn (figedit-maybe-make-directory figedit-root-directory)
-                            (figedit--read-path t))))
-
-  (figedit-open-and-watch figure-path))
+      (figedit-edit figure-path))))
 
 (provide 'figedit)
 
