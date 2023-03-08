@@ -152,17 +152,13 @@ If nil, allow all extensions."
   (when (member 'save-buffer action-list)
     (save-buffer)))
 
-(defun figedit-maybe-make-directory (directory)
-  "Check if DIRECTORY exists.  If it does, return t.
-If it does not, prompt the user if they would like to create it.
-If they say yes, create DIRECTORY and return t.
-If they say no, return nil.
-
-The return value of this function reflects whether DIRECTORY exists."
+(defun figedit--maybe-make-directory (directory)
+  "If DIRECTORY does not exist, prompt user on whether it should be created.
+Return non-nil if DIRECTORY now exists, or nil if DIRECTORY does not exist."
   (or (file-directory-p directory)
-      (and (y-or-n-p (format "Directory '%s' not found.  Create it? "
-                             directory))
-           (not (make-directory directory t)))))
+      (when (y-or-n-p (format "Directory '%s' not found.  Create it? "
+                              directory))
+        (not (make-directory directory t)))))
 
 (defun figedit-export (figure-path &optional sentinel)
   "Export the figure file specified by FIGURE-PATH.
@@ -258,7 +254,7 @@ closed, actions in `figedit-edit-program-close-actions' will be
 performed.  While the figure is being edited, certain actions can be
 performed upon every change to the file.  These are specified by
 `figedit-file-change-actions'."
-  (interactive (progn (figedit-maybe-make-directory figedit-root-directory)
+  (interactive (progn (figedit--maybe-make-directory figedit-root-directory)
                       (list (figedit--read-path t))))
 
   (when (file-regular-p figure-path)
@@ -301,7 +297,7 @@ closed, actions in `figedit-edit-program-close-actions' will be
 performed.  While the figure is being edited, certain actions can be
 performed upon every change to the file.  These are specified by
 `figedit-file-change-actions'."
-  (interactive (progn (figedit-maybe-make-directory figedit-root-directory)
+  (interactive (progn (figedit--maybe-make-directory figedit-root-directory)
                       (list (figedit--read-path)
                             (when current-prefix-arg
                               (intern (completing-read "Select a LaTeX template function: "
