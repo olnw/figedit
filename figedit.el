@@ -258,8 +258,8 @@ closed, actions in `figedit-edit-program-close-actions' will be
 performed.  While the figure is being edited, certain actions can be
 performed upon every change to the file.  These are specified by
 `figedit-file-change-actions'."
-  (interactive (list (progn (figedit-maybe-make-directory figedit-root-directory)
-                            (figedit--read-path t))))
+  (interactive (progn (figedit-maybe-make-directory figedit-root-directory)
+                      (list (figedit--read-path t))))
 
   (when (file-regular-p figure-path)
     (let ((descriptor (file-notify-add-watch
