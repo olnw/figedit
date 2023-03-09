@@ -35,6 +35,8 @@
 
 ;;; Code:
 
+(declare-function lsp-latex-build "ext:lsp-latex")
+
 (defgroup figedit
   nil
   "Functions for inserting and editing figures in LaTeX documents."
