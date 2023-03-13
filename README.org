@@ -2,40 +2,84 @@
 
 This is an Emacs Lisp package that implements the same functionality as Gilles Castel's [[https://github.com/gillescastel/inkscape-figures][Inkscape figure manager]]. It is designed to be more convenient for Emacs users, making use of the [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Minibuffer.html][minibuffer]] for selecting figures, rather than an external menu such as [[https://github.com/davatorium/rofi][rofi]], [[https://github.com/chipsenkbeil/choose][choose]], or [[https://tools.suckless.org/dmenu/][dmenu]].
 
-* Installation
+* Example Configuration
 
 ** Using package.el
-Download ~figedit.el~ to a place on your filesystem, then add the following to your init file:
-
 #+begin_src emacs-lisp
-(add-to-list 'load-path "/path/to/figedit.el")
+;; You have to manually download figedit.el to this location.
+(add-to-list 'load-path "~/.emacs.d/lisp/figedit.el")
 (require 'figedit)
+
+(custom-set-variables
+ ;; The `build-document' action uses `figedit-build-program' to build
+ ;; the current TeX document.  Users of lsp-latex can alternatively
+ ;; specify `lsp-latex-build' to build the document with TexLab.
+ '(figedit-file-change-actions '(export-figure build-document))
+
+ ;; This file will be used as a template for any figures that you create.
+ '(figedit-template-path "~/my-template.svg")
+
+ ;; Example here uses latexmk.  Of course, you could use any other LaTeX
+ ;; program such as pdflatex or lualatex.
+ '(figedit-build-program "latexmk")
+ '(figedit-build-args '("-pdf")))
+
+(global-set-key (kbd "C-c f i") #'figedit-insert)
+(global-set-key (kbd "C-c f e") #'figedit-edit)
 #+end_src
 
 Or with ~use-package~:
 
 #+begin_src emacs-lisp
-(use-package figedit :load-path "/path/to/figedit.el")
+(use-package figedit
+  :load-path "~/.emacs.d/lisp/figedit.el"
+
+  :custom
+  (figedit-template-path "~/my-template.svg")
+  (figedit-file-change-actions '(export-figure build-document))
+  (figedit-build-program "latexmk")
+  (figedit-build-args '("-pdf"))
+
+  :bind
+  ("C-c f i" . figedit-insert)
+  ("C-c f e" . figedit-edit))
 #+end_src
+
+Alternatively, users of straight.el or Elpaca can automatically pull Figedit from GitHub.
 
 ** Using [[https://github.com/radian-software/straight.el][straight.el]]
 #+begin_src emacs-lisp
 (use-package figedit
   :straight (figedit :type git
                      :host github
-                     :repo "olnw/figedit"))
+                     :repo "olnw/figedit")
+  …)
 #+end_src
 
 ** Using [[https://github.com/progfolio/elpaca][Elpaca]]
 #+begin_src emacs-lisp
 (use-package figedit
   :elpaca (figedit :host github
-                   :repo "olnw/figedit"))
+                   :repo "olnw/figedit")
+  …)
 #+end_src
 
 * Customisation
 
-Figedit can be customised by running ~M-x customize-group RET figedit RET~.
+Below is a list of all configuration options:
+
+- ~figedit-template-path~
+- ~figedit-root-directory~
+- ~figedit-file-change-actions~
+- ~figedit-edit-program-open-actions~
+- ~figedit-edit-program-close-actions~
+- ~figedit-edit-program~
+- ~figedit-build-program~
+- ~figedit-build-args~
+- ~figedit-export-program~
+- ~figedit-export-args~
+- ~figedit-template-functions~
+- ~figedit-allowed-extensions~
 
 * Usage
 
