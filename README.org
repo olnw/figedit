@@ -4,7 +4,7 @@ This is an Emacs Lisp package that implements the same functionality as Gilles C
 
 * Example Configuration
 
-** Using package.el
+** Manual Installation
 #+begin_src emacs-lisp
 ;; You have to manually download figedit.el to this location.
 (add-to-list 'load-path "~/.emacs.d/lisp/figedit.el")
