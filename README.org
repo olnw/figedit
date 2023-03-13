@@ -4,6 +4,7 @@ This is an Emacs Lisp package that implements the same functionality as Gilles C
 
 * Installation
 
+** Using package.el
 Download ~figedit.el~ to a place on your filesystem, then add the following to your init file:
 
 #+begin_src emacs-lisp
@@ -17,13 +18,19 @@ Or with ~use-package~:
 (use-package figedit :load-path "/path/to/figedit.el")
 #+end_src
 
-Alternatively, users of ~straight.el~ can tell straight to pull the Figedit repository from GitHub:
-
+** Using [[https://github.com/radian-software/straight.el][straight.el]]
 #+begin_src emacs-lisp
 (use-package figedit
   :straight (figedit :type git
                      :host github
                      :repo "olnw/figedit"))
+#+end_src
+
+** Using [[https://github.com/progfolio/elpaca][Elpaca]]
+#+begin_src emacs-lisp
+(use-package figedit
+  :elpaca (figedit :host github
+                   :repo "olnw/figedit"))
 #+end_src
 
 * Customisation
